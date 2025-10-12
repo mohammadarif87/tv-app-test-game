@@ -10,7 +10,7 @@
   };
 
   const MAX_CORRECT = 10;
-  const MAX_TAPS = 11;
+  const MAX_TAPS = 12;
   const MAX_SECONDS = 60;
 
   const state = {
@@ -74,7 +74,7 @@
       <ol>
         <li>Can you identify all <strong>10 mistakes</strong> correctly in the next screenshot?</li>
         <li>Tap on the screen to lock in your suggestion.</li>
-        <li>You have <strong>30 seconds</strong> and only <strong>11 taps</strong> - there's only room for one mistake, so tap carefully and quickly.</li>
+        <li>You have <strong>60 seconds</strong> and only <strong>12 taps</strong> - tap carefully and quickly.</li>
       </ol>`;
     card.appendChild(rules);
 

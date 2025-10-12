@@ -19,6 +19,6 @@ window.NEXUS_HOTSPOTS = [
 ];
 
 // Whether to show debugging rectangles around the hotspots
-window.NEXUS_DEBUG = true; // set true to visualize hotspots
+window.NEXUS_DEBUG = false; // set true to visualize hotspots
 
 

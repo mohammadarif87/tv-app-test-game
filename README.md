@@ -1,6 +1,6 @@
-# Nexus QA Playground
+# Nexus QA TV Test Game
 
-A tiny single-page game where users tap hotspots on a mock TV app screenshot to find 10 mistakes within 30 seconds and 11 taps.
+A page game where users tap hotspots on a mock TV app screenshot to find 10 mistakes within a time limit and/or tap limit.
 
 ## Run
 Just open `index.html` in a browser (no build needed). On macOS you can run a quick local server:
@@ -20,15 +20,15 @@ Hotspots are defined in `hotspots.js` as an array of rectangles in percentage co
 
 - `x`, `y`: top-left corner percent of width/height
 - `w`, `h`: size in percent
-- Ensure you have exactly 10 items with unique `id` values.
+- Ensure you have 10 items with unique `id` values.
 - Set `window.NEXUS_DEBUG = true` in `hotspots.js` to visualize hotspots during authoring.
 
-## Game Rules (implemented)
-- 30 second countdown
+## Game Rules (current implementation)
+- 60 second countdown
 - 11 total taps allowed
 - 10 hotspots to find
-- Summary screen shows score and success message when all 10 are found
+- Summary screen shows your score and success message when all 10 are found
 
 ## Notes
 - The screenshot is `FigmaRef.png` and must sit next to `index.html`.
-- The layout uses an aspect-ratio container so the overlay aligns at any size.
+- The layout uses an aspect-ratio container so the overlay should align to any size.

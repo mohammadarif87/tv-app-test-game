@@ -11,7 +11,7 @@
 
   const MAX_CORRECT = 10;
   const MAX_TAPS = 11;
-  const MAX_SECONDS = 30;
+  const MAX_SECONDS = 60;
 
   const state = {
     route: ROUTE.LANDING,

@@ -11,7 +11,7 @@ window.NEXUS_HOTSPOTS = [
   { "id": 3, "x": 69.9, "y": 10.6, "w": 5.6, "h": 5.0 },  // "MYL" abbreviation
   { "id": 4, "x": 44.3, "y": 17.2, "w": 29.7, "h": 40.0 },// incorrect image alignment
   { "id": 5, "x": 9.4, "y": 35.0, "w": 22.0, "h": 7.3 }, // "THE MATRX" typo
-  { "id": 6, "x": 10.0, "y": 48.0, "w": 26.5, "h": 5.0 },  // garbled text in description
+  { "id": 6, "x": 10.0, "y": 46.0, "w": 26.5, "h": 7.0 },  // garbled text in description
   { "id": 7, "x": 9.5, "y": 53.5, "w": 6.0, "h": 5.0 },  // "PLAY" button text glitch
   { "id": 8, "x": 9.5, "y": 64.5, "w": 14.0, "h": 4.0 },  // "NEW & TRENDING" cut off
   { "id": 9, "x": 42.0, "y": 72.0, "w": 16.5, "h": 17.5 },  // gap in rail
@@ -19,6 +19,6 @@ window.NEXUS_HOTSPOTS = [
 ];
 
 // Whether to show debugging rectangles around the hotspots
-window.NEXUS_DEBUG = false; // set true to visualize hotspots
+window.NEXUS_DEBUG = true; // set true to visualize hotspots
 
 

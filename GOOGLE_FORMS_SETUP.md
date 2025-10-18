@@ -90,3 +90,7 @@ The leaderboard also stores data locally in the browser's localStorage, so it wi
 - **Total Score**: Issues Found + Time Remaining (0-70 points maximum)
 
 Higher scores indicate better performance (more issues found + more time remaining).
+
+## Google Sheets URL
+
+https://docs.google.com/spreadsheets/d/1msOoBfh_P-Z2_Pm6I8nVZGwfTvvscQF5SUgcft2h2GI/edit?usp=sharing

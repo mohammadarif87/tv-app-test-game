@@ -5,13 +5,15 @@
 
   const ROUTE = {
     LANDING: 'landing',
+    COUNTDOWN: 'countdown',
     GAME: 'game',
     SUMMARY: 'summary',
+    LEADERBOARD: 'leaderboard',
   };
 
   const MAX_CORRECT = 10;
-  const MAX_TAPS = 12;
-  const MAX_SECONDS = 60;
+  const MAX_TAPS = 13;
+  const MAX_SECONDS = 90;
 
   const state = {
     route: ROUTE.LANDING,
@@ -21,6 +23,9 @@
     totalValid: 0,
     timer: null,
     debug: !!window.NEXUS_DEBUG,
+    currentUser: null,
+    gameStartTime: null,
+    leaderboard: JSON.parse(localStorage.getItem('leaderboard') || '[]'),
   };
 
   function navigate(route, extra) {
@@ -28,9 +33,13 @@
     // Toggle illustration background for landing/summary/game backgrounds
     const isPurple = route === ROUTE.LANDING || route === ROUTE.SUMMARY || route === ROUTE.GAME;
     document.body.classList.toggle('theme-purple', isPurple);
+    // Toggle body scroll lock during gameplay
+    document.body.classList.toggle('noscroll', route === ROUTE.GAME);
     if (route === ROUTE.LANDING) renderLanding();
+    if (route === ROUTE.COUNTDOWN) renderCountdown();
     if (route === ROUTE.GAME) renderGame();
     if (route === ROUTE.SUMMARY) renderSummary(extra);
+    if (route === ROUTE.LEADERBOARD) renderLeaderboard();
   }
 
   function resetGameState() {
@@ -74,18 +83,101 @@
       <ol>
         <li>Can you identify all <strong>10 mistakes</strong> correctly in the next screenshot?</li>
         <li>Tap on the screen to lock in your suggestion.</li>
-        <li>You have <strong>60 seconds</strong> and only <strong>12 taps</strong> - tap carefully and quickly.</li>
+        <li>You have <strong>90 seconds</strong> and only <strong>13 taps</strong> - tap carefully and quickly.</li>
       </ol>`;
     card.appendChild(rules);
 
+          // User registration form within main card
+          const userForm = el('div', { class: 'user-form' });
+          userForm.innerHTML = `
+            <h3>Enter your details to compete on the leaderboard</h3>
+            <div class="form-group">
+              <label for="playerName">Name:</label>
+              <input type="text" id="playerName" placeholder="Your name" required>
+            </div>
+            <div class="form-group">
+              <label for="playerEmail">Email:</label>
+              <input type="email" id="playerEmail" placeholder="your.email@example.com" required>
+            </div>
+          `;
+          card.appendChild(userForm);
+
     const actions = el('div', { class: 'actions' });
-    const startBtn = el('button', { class: 'btn btn-lg', html: 'Start Game', onClick: () => navigate(ROUTE.GAME) });
+    const startBtn = el('button', { 
+      class: 'btn btn-lg', 
+      html: 'Start Game', 
+            onClick: () => {
+              const name = document.getElementById('playerName').value.trim();
+              const email = document.getElementById('playerEmail').value.trim();
+
+              if (!name || !email) {
+                alert('Please enter both your name and email address to continue.');
+                return;
+              }
+
+              // Email validation
+              const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+              if (!emailRegex.test(email)) {
+                alert('Please enter a valid email address (e.g., your.name@example.com).');
+                return;
+              }
+
+              state.currentUser = { name, email };
+              navigate(ROUTE.COUNTDOWN);
+            }
+    });
+    const leaderboardBtn = el('button', { 
+      class: 'btn btn-secondary', 
+      html: 'View Leaderboard', 
+      onClick: () => navigate(ROUTE.LEADERBOARD) 
+    });
     actions.appendChild(startBtn);
+    actions.appendChild(leaderboardBtn);
     card.appendChild(actions);
 
     stack.appendChild(logo);
     stack.appendChild(card);
     APP.appendChild(stack);
+  }
+
+  function renderCountdown() {
+    clearInterval(state.timer);
+    APP.innerHTML = '';
+    APP.style.backgroundImage = 'url(./background.png)';
+    APP.style.backgroundSize = 'cover';
+    APP.style.backgroundPosition = 'center';
+    APP.style.backgroundRepeat = 'no-repeat';
+    
+    const countdownContainer = el('div', { class: 'countdown-container' });
+    const countdownCard = el('div', { class: 'countdown-card' });
+    const readyText = el('div', { class: 'ready-text' });
+    readyText.innerHTML = `Get Ready <span class="player-name">${state.currentUser?.name || 'Player'}</span>!`;
+    
+    const countdownNumber = el('div', { class: 'countdown-number' });
+    countdownNumber.textContent = '3';
+    
+    countdownCard.appendChild(readyText);
+    countdownCard.appendChild(countdownNumber);
+    countdownContainer.appendChild(countdownCard);
+    APP.appendChild(countdownContainer);
+    
+    // Start countdown
+    let count = 3;
+    const countdownInterval = setInterval(() => {
+      count--;
+      if (count > 0) {
+        countdownNumber.textContent = count;
+        countdownNumber.classList.add('flash');
+        setTimeout(() => countdownNumber.classList.remove('flash'), 200);
+      } else {
+        clearInterval(countdownInterval);
+        countdownNumber.textContent = 'GO!';
+        countdownNumber.classList.add('flash');
+        setTimeout(() => {
+          navigate(ROUTE.GAME);
+        }, 500);
+      }
+    }, 1000);
   }
 
   function startTimer(onExpire) {
@@ -123,11 +215,23 @@
 
   function endGame() {
     clearInterval(state.timer);
-    navigate(ROUTE.SUMMARY, { score: state.totalValid });
+    const completionTime = state.gameStartTime ? Date.now() - state.gameStartTime : 0;
+    const timeRemaining = Math.max(0, state.secondsRemaining);
+    // Only award time bonus if all 10 are found
+    const timeBonus = state.totalValid >= MAX_CORRECT ? timeRemaining : 0;
+    const totalScore = state.totalValid + timeBonus;
+    
+    navigate(ROUTE.SUMMARY, { 
+      score: state.totalValid, 
+      timeRemaining: timeRemaining,
+      totalScore: totalScore,
+      completionTime: completionTime
+    });
   }
 
   function renderGame() {
     resetGameState();
+    state.gameStartTime = Date.now();
     APP.innerHTML = '';
     const card = el('div', { class: 'card wide' });
 
@@ -191,6 +295,10 @@
   function renderSummary(extra) {
     APP.innerHTML = '';
     const score = extra?.score ?? 0;
+    const timeRemaining = extra?.timeRemaining ?? 0;
+    const totalScore = extra?.totalScore ?? 0;
+    const completionTime = extra?.completionTime ?? 0;
+    
     const stack = el('div', { class: 'stack' });
     const logo = el('img', { class: 'brand', src: './fx-digital-logo.svg', alt: 'FX Digital' });
     const card = el('div', { class: 'card summary solid' });
@@ -204,15 +312,160 @@
         : `You correctly identified <strong>${score}</strong>/10 issues on the page. Well done!`);
     card.appendChild(el('p', { class: 'muted', html: msg }));
 
+    // Score details
+    const scoreDetails = el('div', { class: 'score-details' });
+    scoreDetails.innerHTML = `
+      <div class="score-breakdown">
+        <div class="score-item">
+          <span class="label">Issues Found:</span>
+          <span class="value">${score}/10</span>
+        </div>
+        <div class="score-item">
+          <span class="label">Time Remaining:</span>
+          <span class="value">${timeRemaining}s</span>
+        </div>
+        <div class="score-item total">
+          <span class="label">Total Score:</span>
+          <span class="value">${totalScore}</span>
+        </div>
+      </div>
+    `;
+    card.appendChild(scoreDetails);
+
+    // Add to leaderboard if user exists
+    if (state.currentUser && totalScore > 0) {
+      const leaderboardEntry = {
+        name: state.currentUser.name,
+        email: state.currentUser.email,
+        score: score,
+        timeRemaining: timeRemaining,
+        totalScore: totalScore,
+        completionTime: completionTime,
+        timestamp: new Date().toISOString()
+      };
+      
+      state.leaderboard.push(leaderboardEntry);
+      state.leaderboard.sort((a, b) => b.totalScore - a.totalScore);
+      state.leaderboard = state.leaderboard.slice(0, 50); // Keep top 50
+      localStorage.setItem('leaderboard', JSON.stringify(state.leaderboard));
+      
+      // Submit to Apps Script if configured, otherwise fallback to Google Forms (optional)
+      submitScore(leaderboardEntry);
+    }
+
     const actions = el('div', { class: 'actions' });
     const home = el('button', { class: 'btn btn-lg', html: 'Back to Landing', onClick: () => navigate(ROUTE.LANDING) });
-    actions.append(home);
+    const leaderboard = el('button', { class: 'btn btn-secondary', html: 'View Leaderboard', onClick: () => navigate(ROUTE.LEADERBOARD) });
+    actions.append(home, leaderboard);
     card.appendChild(actions);
 
     stack.appendChild(logo);
     stack.appendChild(card);
     APP.appendChild(stack);
   }
+
+        function renderLeaderboard() {
+          APP.innerHTML = '';
+          APP.style.backgroundImage = 'url(./background.png)';
+          APP.style.backgroundSize = 'cover';
+          APP.style.backgroundPosition = 'center';
+          APP.style.backgroundRepeat = 'no-repeat';
+          const stack = el('div', { class: 'stack' });
+          const logo = el('img', { class: 'brand', src: './fx-digital-logo.svg', alt: 'FX Digital' });
+          const card = el('div', { class: 'card solid' });
+    
+    card.appendChild(el('h1', { class: 'title center', html: 'Leaderboard' }));
+    card.appendChild(el('p', { class: 'muted center', html: 'Top performers in the QA challenge' }));
+
+    if (state.leaderboard.length === 0) {
+      card.appendChild(el('p', { class: 'muted center', html: 'No scores yet. Be the first to play!' }));
+    } else {
+      const leaderboardList = el('div', { class: 'leaderboard-list' });
+      
+      state.leaderboard.slice(0, 20).forEach((entry, index) => {
+        const rank = index + 1;
+        const entryEl = el('div', { class: `leaderboard-entry ${rank <= 3 ? 'top-three' : ''}` });
+        entryEl.innerHTML = `
+          <div class="rank">#${rank}</div>
+          <div class="player-info">
+            <div class="name">${entry.name}</div>
+            <div class="details">${entry.score}/10 issues • ${entry.timeRemaining}s remaining</div>
+          </div>
+          <div class="score">${entry.totalScore}</div>
+        `;
+        leaderboardList.appendChild(entryEl);
+      });
+      
+      card.appendChild(leaderboardList);
+    }
+
+    const actions = el('div', { class: 'actions' });
+    const home = el('button', { class: 'btn btn-lg', html: 'Back to Landing', onClick: () => navigate(ROUTE.LANDING) });
+    actions.appendChild(home);
+    card.appendChild(actions);
+
+    stack.appendChild(logo);
+    stack.appendChild(card);
+    APP.appendChild(stack);
+  }
+
+// Unified submission: send to Apps Script (if configured) AND Google Forms
+function submitScore(entry) {
+  submitToAppsScript(entry);
+  submitToGoogleForms(entry);
+}
+
+function submitToGoogleForms(entry) {
+  // Google Forms integration - using your actual form URL
+  const formUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSc7v4zKoCxvcNsmkClRbylmhphwSdyAlec8lUbVCwEkK_Rbjw/formResponse';
+  const formData = new FormData();
+
+  // Map your form fields with the correct field IDs
+  formData.append('entry.2005620554', entry.name); // Name field
+  formData.append('entry.1045781291', entry.email); // Email field  
+  formData.append('entry.1065046570', entry.score); // Issues Found field
+  formData.append('entry.1166974658', entry.timeRemaining); // Time Remaining field
+  formData.append('entry.839337160', entry.totalScore); // Total Score field
+
+  // Submit to Google Forms (this will work in background)
+  fetch(formUrl, {
+    method: 'POST',
+    body: formData,
+    mode: 'no-cors'
+  }).catch(() => {
+    // Silently fail - Google Forms submission is optional
+    console.log('Google Forms submission failed (this is normal)');
+  });
+}
+
+// Post to a Google Apps Script Web App (deploy as web app, anyone can access)
+// Configure by setting window.LEADERBOARD_WEBAPP_URL = 'https://script.google.com/macros/s/XXX/exec' in index.html
+function submitToAppsScript(entry) {
+  try {
+    const url = window.LEADERBOARD_WEBAPP_URL;
+    if (!url) return false;
+    
+    // Use GET with query parameters to avoid CORS issues
+    const params = new URLSearchParams({
+      name: entry.name,
+      email: entry.email,
+      issuesFound: entry.score,
+      timeRemaining: entry.timeRemaining,
+      totalScore: entry.totalScore,
+      completionTimeMs: entry.completionTime,
+      timestamp: entry.timestamp,
+      ua: navigator.userAgent,
+    });
+    
+    fetch(`${url}?${params}`, {
+      method: 'GET',
+      mode: 'no-cors', // This prevents CORS errors
+    }).catch(() => {});
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
 
   // Boot
   navigate(ROUTE.LANDING);

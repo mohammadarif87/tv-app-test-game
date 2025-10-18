@@ -40,6 +40,12 @@ body.theme-purple {
   padding: 24px;
 }
 
+/* Prevent page scroll during gameplay */
+body.noscroll {
+  overflow: hidden;
+  height: 100dvh;
+}
+
 .card {
   width: min(1100px, 95vw);
   background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
@@ -121,7 +127,7 @@ body.theme-purple {
   overflow: hidden;
   margin: 0 auto;
 }
-.stage img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.stage img { width: 100%; height: 100%; object-fit: contain; display: block; }
 
 .hotspot {
   position: absolute;
@@ -169,9 +175,237 @@ body.theme-purple {
   border-radius: 6px;
 }
 
+        /* User registration form styles */
+        .user-form {
+          margin: 20px 100px;
+          padding: 20px;
+          background: rgba(255,255,255,0.05);
+          border-radius: 12px;
+          border: 2px solid #673ab7;
+        }
+
+        .user-form h3 {
+          margin: 0 0 16px 0;
+          font-size: 1.2rem;
+          font-weight: 600;
+          color: #000000;
+        }
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+        .form-group label {
+          display: block;
+          margin-bottom: 6px;
+          font-weight: 600;
+          color: #000000;
+        }
+
+        .form-group input {
+          width: 100%;
+          padding: 12px 16px;
+          border: 2px solid #673ab7;
+          border-radius: 8px;
+          background: rgba(255,255,255,0.1);
+          color: #000000;
+          font-size: 1rem;
+          transition: border-color 0.2s ease, background-color 0.2s ease;
+        }
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: rgba(255,255,255,0.15);
+}
+
+.form-group input::placeholder {
+  color: var(--muted);
+}
+
+/* Score details styles */
+.score-details {
+  margin: 20px 0;
+  padding: 20px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.score-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.score-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.score-item:last-child {
+  border-bottom: none;
+}
+
+.score-item.total {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--accent);
+  border-top: 2px solid var(--accent);
+  padding-top: 12px;
+  margin-top: 8px;
+}
+
+        .score-item .label {
+          color: #000000;
+        }
+
+        .score-item .value {
+          font-weight: 600;
+          color: #000000;
+        }
+
+/* Leaderboard styles */
+.leaderboard-list {
+  margin: 20px 0;
+}
+
+.leaderboard-entry {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  margin-bottom: 8px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+  transition: all 0.2s ease;
+}
+
+.leaderboard-entry:hover {
+  background: rgba(255,255,255,0.08);
+  transform: translateY(-1px);
+}
+
+.leaderboard-entry.top-three {
+  background: linear-gradient(135deg, rgba(155,92,255,0.2), rgba(34,211,238,0.1));
+  border-color: var(--accent);
+}
+
+.leaderboard-entry .rank {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--accent);
+  margin-right: 20px;
+  min-width: 40px;
+}
+
+.leaderboard-entry.top-three .rank {
+  color: #ffd700;
+}
+
+.leaderboard-entry .player-info {
+  flex: 1;
+}
+
+        .leaderboard-entry .name {
+          font-weight: 700;
+          font-size: 1.1rem;
+          color: #000000;
+          margin-bottom: 4px;
+        }
+
+        .leaderboard-entry .details {
+          font-size: 0.9rem;
+          color: #000000;
+        }
+
+.leaderboard-entry .score {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--accent);
+  min-width: 60px;
+  text-align: right;
+}
+
+/* Countdown screen styles */
+.countdown-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  text-align: center;
+  padding: 24px;
+}
+
+.countdown-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 48px 32px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.ready-text {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 2rem;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.player-name {
+  color: var(--accent);
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.countdown-number {
+  font-size: 8rem;
+  font-weight: 800;
+  color: var(--accent);
+  text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transition: all 0.2s ease;
+  animation: pulse 1s infinite;
+}
+
+.countdown-number.flash {
+  transform: scale(1.2);
+  color: #ff6b6b;
+  animation: flash 0.2s ease;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes flash {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1.2); }
+}
+
 /* Small screens */
 @media (max-width: 520px) {
   .card { padding: 18px; }
+  .leaderboard-entry {
+    padding: 12px 16px;
+  }
+  .leaderboard-entry .rank {
+    font-size: 1.2rem;
+    margin-right: 12px;
+    min-width: 30px;
+  }
+  .leaderboard-entry .score {
+    font-size: 1.1rem;
+    min-width: 50px;
+  }
+  .ready-text { font-size: 2rem; }
+  .countdown-number { font-size: 6rem; }
 }
 
 

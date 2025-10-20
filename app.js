@@ -40,6 +40,7 @@
     currentUser: null,
     gameStartTime: null,
     leaderboard: JSON.parse(localStorage.getItem('leaderboard') || '[]'),
+    inactivityTimer: null,
   };
 
   function navigate(route, extra) {
@@ -49,6 +50,13 @@
     document.body.classList.toggle('theme-purple', isPurple);
     // Toggle body scroll lock during gameplay
     document.body.classList.toggle('noscroll', route === ROUTE.GAME);
+    
+    // Handle inactivity timer
+    stopInactivityTimer();
+    if (route === ROUTE.SUMMARY || route === ROUTE.LEADERBOARD) {
+      startInactivityTimer();
+    }
+    
     if (route === ROUTE.LANDING) renderLanding();
     if (route === ROUTE.COUNTDOWN) renderCountdown();
     if (route === ROUTE.GAME) renderGame();
@@ -63,6 +71,23 @@
     state.totalValid = 0;
     clearInterval(state.timer);
     state.timer = null;
+  }
+
+  function startInactivityTimer() {
+    clearTimeout(state.inactivityTimer);
+    state.inactivityTimer = setTimeout(() => {
+      navigate(ROUTE.LANDING);
+    }, 10000); // 10 seconds
+  }
+
+  function resetInactivityTimer() {
+    clearTimeout(state.inactivityTimer);
+    startInactivityTimer();
+  }
+
+  function stopInactivityTimer() {
+    clearTimeout(state.inactivityTimer);
+    state.inactivityTimer = null;
   }
 
   function el(tag, attrs = {}, children = []) {
@@ -115,6 +140,44 @@
             </div>
           `;
           card.appendChild(userForm);
+
+          // Add keyboard navigation
+          const nameInput = document.getElementById('playerName');
+          const emailInput = document.getElementById('playerEmail');
+          
+          if (nameInput && emailInput) {
+            nameInput.addEventListener('keydown', (e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                emailInput.focus();
+              }
+            });
+            
+            emailInput.addEventListener('keydown', (e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                emailInput.blur(); // Close keyboard
+                // Trigger the start game logic
+                const name = nameInput.value.trim();
+                const email = emailInput.value.trim();
+
+                if (!name || !email) {
+                  alert('Please enter both your name and email address to continue.');
+                  return;
+                }
+
+                // Email validation
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                  alert('Please enter a valid email address (e.g., your.name@example.com).');
+                  return;
+                }
+
+                state.currentUser = { name, email };
+                navigate(ROUTE.COUNTDOWN);
+              }
+            });
+          }
 
     const actions = el('div', { class: 'actions' });
     const startBtn = el('button', { 
@@ -369,13 +432,20 @@
 
     const actions = el('div', { class: 'actions' });
     const home = el('button', { class: 'btn btn-lg', html: 'Back to Landing', onClick: () => navigate(ROUTE.LANDING) });
+    const tryAgain = el('button', { class: 'btn btn-secondary', html: 'Try Again', onClick: () => navigate(ROUTE.COUNTDOWN) });
     const leaderboard = el('button', { class: 'btn btn-secondary', html: 'View Leaderboard', onClick: () => navigate(ROUTE.LEADERBOARD) });
-    actions.append(home, leaderboard);
+    actions.append(home, tryAgain, leaderboard);
     card.appendChild(actions);
 
     stack.appendChild(logo);
     stack.appendChild(card);
     APP.appendChild(stack);
+
+    // Add activity listeners to reset inactivity timer
+    const activityEvents = ['touchstart', 'touchend', 'mousedown', 'mousemove', 'keydown', 'scroll'];
+    activityEvents.forEach(event => {
+      document.addEventListener(event, resetInactivityTimer, { passive: true });
+    });
   }
 
         function renderLeaderboard() {
@@ -421,6 +491,12 @@
     stack.appendChild(logo);
     stack.appendChild(card);
     APP.appendChild(stack);
+
+    // Add activity listeners to reset inactivity timer
+    const activityEvents = ['touchstart', 'touchend', 'mousedown', 'mousemove', 'keydown', 'scroll'];
+    activityEvents.forEach(event => {
+      document.addEventListener(event, resetInactivityTimer, { passive: true });
+    });
   }
 
 // Unified submission: send to Apps Script (if configured) AND Google Forms

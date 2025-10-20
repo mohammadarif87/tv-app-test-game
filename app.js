@@ -3,6 +3,20 @@
 (function () {
   const APP = document.getElementById('app');
 
+  // Parse URL query param to enable debug overlays: ?debug=true|1|yes|on
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const debugParam = params.get('debug');
+    if (debugParam != null) {
+      window.NEXUS_DEBUG = /^(1|true|yes|on)$/i.test(String(debugParam));
+    } else if (typeof window.NEXUS_DEBUG !== 'boolean') {
+      window.NEXUS_DEBUG = false;
+    }
+  } catch (_) {
+    // Ignore URL parsing errors and fall back to default
+    if (typeof window.NEXUS_DEBUG !== 'boolean') window.NEXUS_DEBUG = false;
+  }
+
   const ROUTE = {
     LANDING: 'landing',
     COUNTDOWN: 'countdown',

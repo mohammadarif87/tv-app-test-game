@@ -16,6 +16,7 @@ function doGet(e) {
     sheet.appendRow([
       e.parameter.name || '',
       e.parameter.email || '',
+      e.parameter.phone || '',
       e.parameter.issuesFound || '',
       e.parameter.timeRemaining || '',
       e.parameter.totalScore || '',

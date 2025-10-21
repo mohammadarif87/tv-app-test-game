@@ -27,7 +27,7 @@
 
   const MAX_CORRECT = 10;
   const MAX_TAPS = 13;
-  const MAX_SECONDS = 90;
+  const MAX_SECONDS = 60;
 
   const state = {
     route: ROUTE.LANDING,
@@ -122,7 +122,7 @@
       <ol>
         <li>Can you identify all <strong>10 mistakes</strong> correctly in the next screenshot?</li>
         <li>Tap on the screen to lock in your suggestion.</li>
-        <li>You have <strong>90 seconds</strong> and only <strong>13 taps</strong> - tap carefully and quickly.</li>
+        <li>You have <strong>60 seconds</strong> and only <strong>13 taps</strong> - tap carefully and quickly.</li>
       </ol>`;
     card.appendChild(rules);
 
@@ -138,14 +138,19 @@
               <label for="playerEmail">Email:</label>
               <input type="email" id="playerEmail" placeholder="your.email@example.com" required>
             </div>
+            <div class="form-group">
+              <label for="playerPhone">Telephone:</label>
+              <input type="tel" id="playerPhone" placeholder="Your phone number" required>
+            </div>
           `;
           card.appendChild(userForm);
 
           // Add keyboard navigation
           const nameInput = document.getElementById('playerName');
           const emailInput = document.getElementById('playerEmail');
+          const phoneInput = document.getElementById('playerPhone');
           
-          if (nameInput && emailInput) {
+          if (nameInput && emailInput && phoneInput) {
             nameInput.addEventListener('keydown', (e) => {
               if (e.key === 'Enter') {
                 e.preventDefault();
@@ -156,13 +161,21 @@
             emailInput.addEventListener('keydown', (e) => {
               if (e.key === 'Enter') {
                 e.preventDefault();
-                emailInput.blur(); // Close keyboard
+                phoneInput.focus();
+              }
+            });
+            
+            phoneInput.addEventListener('keydown', (e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                phoneInput.blur(); // Close keyboard
                 // Trigger the start game logic
                 const name = nameInput.value.trim();
                 const email = emailInput.value.trim();
+                const phone = phoneInput.value.trim();
 
-                if (!name || !email) {
-                  alert('Please enter both your name and email address to continue.');
+                if (!name || !email || !phone) {
+                  alert('Please enter your name, email address, and phone number to continue.');
                   return;
                 }
 
@@ -173,7 +186,14 @@
                   return;
                 }
 
-                state.currentUser = { name, email };
+                // UK phone number validation
+                const phoneRegex = /^0[1-9]\d{9}$/;
+                if (!phoneRegex.test(phone)) {
+                  alert('Please enter a valid UK phone number (e.g., 07123456789 or 02012345678).');
+                  return;
+                }
+
+                state.currentUser = { name, email, phone };
                 navigate(ROUTE.COUNTDOWN);
               }
             });
@@ -186,9 +206,10 @@
             onClick: () => {
               const name = document.getElementById('playerName').value.trim();
               const email = document.getElementById('playerEmail').value.trim();
+              const phone = document.getElementById('playerPhone').value.trim();
 
-              if (!name || !email) {
-                alert('Please enter both your name and email address to continue.');
+              if (!name || !email || !phone) {
+                alert('Please enter your name, email address, and phone number to continue.');
                 return;
               }
 
@@ -199,7 +220,14 @@
                 return;
               }
 
-              state.currentUser = { name, email };
+              // UK phone number validation
+              const phoneRegex = /^0[1-9]\d{9}$/;
+              if (!phoneRegex.test(phone)) {
+                alert('Please enter a valid UK phone number (e.g., 07123456789 or 02012345678).');
+                return;
+              }
+
+              state.currentUser = { name, email, phone };
               navigate(ROUTE.COUNTDOWN);
             }
     });
@@ -414,6 +442,7 @@
       const leaderboardEntry = {
         name: state.currentUser.name,
         email: state.currentUser.email,
+        phone: state.currentUser.phone,
         score: score,
         timeRemaining: timeRemaining,
         totalScore: totalScore,
@@ -539,6 +568,7 @@ function submitToAppsScript(entry) {
     const params = new URLSearchParams({
       name: entry.name,
       email: entry.email,
+      phone: entry.phone,
       issuesFound: entry.score,
       timeRemaining: entry.timeRemaining,
       totalScore: entry.totalScore,

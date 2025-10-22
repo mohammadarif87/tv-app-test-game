@@ -48,8 +48,8 @@
     // Toggle illustration background for landing/summary/game backgrounds
     const isPurple = route === ROUTE.LANDING || route === ROUTE.SUMMARY || route === ROUTE.GAME;
     document.body.classList.toggle('theme-purple', isPurple);
-    // Toggle body scroll lock during gameplay
-    document.body.classList.toggle('noscroll', route === ROUTE.GAME);
+    // Toggle body scroll lock during gameplay (disabled to allow scrolling)
+    // document.body.classList.toggle('noscroll', route === ROUTE.GAME);
     
     // Handle inactivity timer
     stopInactivityTimer();
@@ -77,7 +77,7 @@
     clearTimeout(state.inactivityTimer);
     state.inactivityTimer = setTimeout(() => {
       navigate(ROUTE.LANDING);
-    }, 10000); // 10 seconds
+    }, 120000); // 2 minutes (120 seconds)
   }
 
   function resetInactivityTimer() {
